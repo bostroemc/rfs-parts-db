@@ -1,6 +1,6 @@
 # README job-queue
 
-__job-queue__ exposes a simple FIFO buffer to the Data Layer. It is based on the 
+__rfs-parts-db__ handles a parts database for a rollfeed system. An interface to the ctrlX Data Layer is included.  It is based on the 
 __datalayer.provider__ sample provided by ctrlX AUTOMATION SDK V1.8.
 
 ## Introduction
