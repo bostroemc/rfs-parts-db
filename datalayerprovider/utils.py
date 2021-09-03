@@ -22,12 +22,12 @@ def initialize(db):
     return conn
 
 # add part to parts table
-def add_part(conn, description, profile):
+def add_part(conn, profile):
     try:
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
         c = conn.cursor()
-        c.execute("INSERT INTO parts(description, profile, timestamp) VALUES(?, ?, ?);", (description, profile, timestamp))
+        c.execute("INSERT INTO parts(profile, timestamp) VALUES(?, ?, ?);", (profile, timestamp))
         conn.commit()
 
         return c.lastrowid

@@ -42,59 +42,40 @@ def run_provider(provider : datalayer.provider.Provider):
     base = datalayerprovider.utils.initialize(db) #Leave one connection instance open to maintain memory
     base.execute("pragma journal_mode=wal;")       #Configure database in "write-ahead log" mode
 
-    node_push = datalayerprovider.nodes.Push(db)  #add job to queue
-    node_pop = datalayerprovider.nodes.Pop(db)    #pop job from queue
-    node_count = datalayerprovider.nodes.Count(db)     #return queue/pending count, write zero to dump
-    node_done =  datalayerprovider.nodes.Done(db)     #add item to db or mark item in db as done
-    node_history = datalayerprovider.nodes.History(db)    #fetch items from history
-    node_auto = datalayerprovider.nodes.Auto(auto)    #automatically generate job orders when true
+    #node_push = datalayerprovider.nodes.Push(db)  #add job to queue
+    #node_pop = datalayerprovider.nodes.Pop(db)    #pop job from queue
+    #node_count = datalayerprovider.nodes.Count(db)     #return queue/pending count, write zero to dump
+    #node_done =  datalayerprovider.nodes.Done(db)     #add item to db or mark item in db as done
+    #node_history = datalayerprovider.nodes.History(db)    #fetch items from history
+    #node_auto = datalayerprovider.nodes.Auto(auto)    #automatically generate job orders when true
 
-    with datalayer.provider_node.ProviderNode(node_push.cbs, 1234) as node,         \
-            datalayer.provider_node.ProviderNode(node_pop.cbs, 1234) as node_2,     \
-            datalayer.provider_node.ProviderNode(node_count.cbs, 1234) as node_3,   \
-            datalayer.provider_node.ProviderNode(node_done.cbs, 1234) as node_4,    \
-            datalayer.provider_node.ProviderNode(node_history.cbs, 1234) as node_5, \
-            datalayer.provider_node.ProviderNode(node_auto.cbs, 1234) as node_6:       
-        result = provider.register_node("mechatronics/job_request", node)
-        if result != datalayer.variant.Result.OK:
-            print("Register job_request failed with: ", result)
+    node_push = datalayerprovider.nodes.Push(db)          #add part to db
+    node_archive = datalayerprovider.nodes.Archive(db)    #create Archive file
+    node_restore = datalayerprovider.nodes.Restore(db)    #create Archive file
 
-        result = provider.register_node("mechatronics/pop", node_2)
+
+    with datalayer.provider_node.ProviderNode(node_push.cbs, 1234) as node_1, datalayer.provider_node.ProviderNode(node_archive.cbs, 1234) as node_2, datalayer.provider_node.ProviderNode(node_restore.cbs, 1234) as node_3:   
+        result = provider.register_node("rfs/add_part", node_1)
         if result != datalayer.variant.Result.OK:
             print("Register pop failed with: ", result)
 
-        result = provider.register_node("mechatronics/count", node_3)
+        result = provider.register_node("rfs/archive", node_2)
         if result != datalayer.variant.Result.OK:
-            print("Register count failed with: ", result)
+            print("Register job_request failed with: ", result)
 
-        result = provider.register_node("mechatronics/done", node_4)
+        result = provider.register_node("rfs/restore", node_3)
         if result != datalayer.variant.Result.OK:
-            print("Register count failed with: ", result)        
+            print("Register pop failed with: ", result)
 
-        result = provider.register_node("mechatronics/history", node_5)
-        if result != datalayer.variant.Result.OK:
-            print("Register history failed with: ", result)                
-
-        result = provider.register_node("mechatronics/auto", node_6)
-        if result != datalayer.variant.Result.OK:
-            print("Register auto failed with: ", result)      
-
-        print('job-queue starting...')
+        print('rfs-parts-db starting...')
         result= provider.start()
         if result != datalayer.variant.Result.OK:
-            print("Starting job-queue failed with: ", result)
+            print("Starting rfs-parts-db failed with: ", result)
             
         count=0
         while True:
-            conn = datalayerprovider.utils.initialize(db)
-            if conn: 
-                if datalayerprovider.utils.count_queue(conn) == 0  and node_auto.value():
-                    datalayerprovider.utils.add_virtual_job_order(conn, 3)
-
-                conn.close()
-
             count=count+1
-            if count > 7199:
+            if count > 360:
                 break
 
             time.sleep(5)
@@ -103,11 +84,10 @@ def run_provider(provider : datalayer.provider.Provider):
 
         result = provider.stop()
  
-        result = provider.unregister_node("mechatronics/job_request")
-        result = provider.unregister_node("mechatronics/pop")
-        result = provider.unregister_node("mechatronics/count")
-        result = provider.unregister_node("mechatronics/done")
-        result = provider.unregister_node("mechatronics/history")
+        result = provider.unregister_node("rfs/add_part")
+        result = provider.unregister_node("rfs/archive")
+        result = provider.unregister_node("rfs/restore")
+
 
 def run():
     # Create and start ctrlX datalayer...")
