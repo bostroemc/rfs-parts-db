@@ -105,18 +105,24 @@ def archive(conn, filename):
         parts = [dict((c.description[i][0], value) for i, value in enumerate(row)) for row in result]
 
         f = open(filename, "w")
-        f.write(f"IndraMotion Rollfeed Standard (XM RFS) recipe backup: {timestamp}\n")
-        for part in parts:
-            profile = json.loads(part['profile'])
 
-            f.write(f"Part: {part['id']}\n")
-            f.write(f"\tDescription: {part['description']}\n")
-            f.write(f"\tDistance: {profile['dist']}\n")
-            f.write(f"\tVelocity: {profile['vel']}\n")
-            f.write(f"\tAcceleration: {profile['accel']}\n")
-            f.write(f"\tLast edited: {part['timestamp']}\n")
+        if f:
+            f.write(f"IndraMotion Rollfeed Standard (XM RFS) recipe backup: {timestamp}\n")
+            for part in parts:
+                profile = json.loads(part['profile'])
 
-        f.close()
+                f.write(f"Part: {part['id']}\n")
+                f.write(f"\tDescription: {part['description']}\n")
+                f.write(f"\tDistance: {profile['dist']}\n")
+                f.write(f"\tVelocity: {profile['vel']}\n")
+                f.write(f"\tAcceleration: {profile['accel']}\n")
+                f.write(f"\tLast edited: {part['timestamp']}\n")
+
+            f.close()
+
+        else:
+            print("rfs-parts-db unable to open file")
+
         return
 
 def restore(conn, filename):

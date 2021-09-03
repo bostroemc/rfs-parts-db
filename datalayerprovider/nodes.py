@@ -132,7 +132,9 @@ class Archive:
     
     def __on_write(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _data = Variant()
-   
+        
+        print("rfs-parts-db attempting to write file")
+        
         conn = datalayerprovider.utils.initialize(self.db)
         if conn and int(data.get_string()) == 1: 
             self._value = json.dumps(datalayerprovider.utils.archive(conn, "/media/mmcblk1p1/BACKUP_RFS.txt"))
