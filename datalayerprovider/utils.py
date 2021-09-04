@@ -27,7 +27,7 @@ def add_part(conn, profile):
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
         c = conn.cursor()
-        c.execute("INSERT INTO parts(profile, timestamp) VALUES(?, ?, ?);", (profile, timestamp))
+        c.execute("INSERT INTO parts(profile, timestamp) VALUES(?, ?);", (profile, timestamp))
         conn.commit()
 
         return c.lastrowid

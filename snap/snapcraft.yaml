@@ -1,6 +1,6 @@
 name: rfs-parts-db
-version: 1.0.3
-summary: Python-based frs parts database handler for Rexroth ctrlX AUTOMATION platform 
+version: 1.0.4
+summary: Python-based rfs parts database handler for Rexroth ctrlX AUTOMATION platform 
 # title: SDK-Python
 description: 'rfs-parts-db provides a part database handler (SQLite) for Rexroth ctrlX AUTOMATION platform 
 '
