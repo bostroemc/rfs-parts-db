@@ -137,7 +137,7 @@ class Archive:
         
         conn = datalayerprovider.utils.initialize(self.db)
         if conn and int(data.get_string()) == 1: 
-            self._value = json.dumps(datalayerprovider.utils.archive(conn, "/media/mmcblk1p1/BACKUP_RFS.txt"))
+            self._value = json.dumps(datalayerprovider.utils.archive(conn, "/media/sda1/BACKUP_RFS.txt"))  # prev.   "/media/mmcblk1p1/BACKUP_RFS.txt"
             _data.set_string(self._value)
         
         if conn: 
@@ -187,7 +187,7 @@ class Restore:
    
         conn = datalayerprovider.utils.initialize(self.db)
         if conn and int(data.get_string()) == 1: 
-            self._value = json.dumps(datalayerprovider.utils.restore(conn, "/media/mmcblk1p1/BACKUP_RFS.txt"))
+            self._value = json.dumps(datalayerprovider.utils.restore(conn, "/media/sda1/BACKUP_RFS.txt"))  # prev.   "/media/mmcblk1p1/BACKUP_RFS.txt"
             _data.set_string(self._value)
         
         if conn: 
