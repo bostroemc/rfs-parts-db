@@ -42,8 +42,8 @@ def run_provider(provider : datalayer.provider.Provider):
     base = datalayerprovider.utils.initialize(db) #Leave one connection instance open to maintain memory
     base.execute("pragma journal_mode=wal;")       #Configure database in "write-ahead log" mode
 
-    profile = {"dist": [192.34, 33.123], "vel": [75, 65], "accel": [75, 35]}
-    datalayerprovider.utils.add_part(base, json.dumps(profile))    
+    profile_2 = {"dist": [192.34], "vel": [75], "accel": [75]}
+    datalayerprovider.utils.add_part(base, json.dumps(profile_2))    
 
     #node_push = datalayerprovider.nodes.Push(db)  #add job to queue
     #node_pop = datalayerprovider.nodes.Pop(db)    #pop job from queue
