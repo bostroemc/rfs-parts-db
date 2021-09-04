@@ -119,11 +119,10 @@ def archive(conn, filename):
                 f.write(f"\tLast edited: {part['timestamp']}\n")
 
             f.close()
-
+            return parts
         else:
             print("rfs-parts-db unable to open file")
-
-        return
+            return []
 
 def restore(conn, filename):
     c = conn.cursor()

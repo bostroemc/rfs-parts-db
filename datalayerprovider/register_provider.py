@@ -43,7 +43,7 @@ def run_provider(provider : datalayer.provider.Provider):
     base.execute("pragma journal_mode=wal;")       #Configure database in "write-ahead log" mode
 
     profile = {"dist": [192.34, 33.123], "vel": [75, 65], "accel": [75, 35]}
-    datalayerprovider.utils.add_part(db, json.dumps(profile))    
+    datalayerprovider.utils.add_part(base, json.dumps(profile))    
 
     #node_push = datalayerprovider.nodes.Push(db)  #add job to queue
     #node_pop = datalayerprovider.nodes.Pop(db)    #pop job from queue
