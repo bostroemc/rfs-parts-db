@@ -174,7 +174,7 @@ class Update:
  
         conn = datalayerprovider.utils.initialize(self.db)
         if conn: # and _isValid:
-            datalayerprovider.utils.update_part(conn, _id, _description, json.dumps(_test))
+            datalayerprovider.utils.update_part(conn, _id, _description, json.dumps(_profile))
             conn.close()
 
         cb(Result(Result.OK), None)        
