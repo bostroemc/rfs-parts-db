@@ -6,6 +6,9 @@ import sqlite3
 from sqlite3 import Error
 import json
 
+# part format:  {"description":"", "profile":{"dist":[75], "vel":[75], "accel":[75]}}
+
+
 # initialize database connection, adding tables queue and history if required
 def initialize(db):
     conn = None
@@ -22,12 +25,14 @@ def initialize(db):
     return conn
 
 # add part to parts table
-def add_part(conn, profile):
+def add_part(conn, description, profile):
+    temp = normalize(profile)  # filter unwanted fields + add defaults
+
     try:
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
         c = conn.cursor()
-        c.execute("INSERT INTO parts(profile, timestamp) VALUES(?, ?);", (profile, timestamp))
+        c.execute("INSERT INTO parts(description, profile, timestamp) VALUES(?, ?, ?);", (description, json.dumps(temp), timestamp))
         conn.commit()
 
         return c.lastrowid
@@ -59,7 +64,7 @@ def dump(conn):
     c.execute("DELETE FROM SQLITE_SEQUENCE where name='parts'")
     conn.commit()
 
-#update item in parts table
+#update profile of item in parts table  TODO determine whether this is needed; not currently used
 def update_profile(conn, id, profile):
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
@@ -69,10 +74,14 @@ def update_profile(conn, id, profile):
     c.execute("SELECT * FROM parts WHERE id = ?", [id])
     result = c.fetchone()
     if result:
-       r = [dict((c.description[i][0], value) for i, value in enumerate(result))]
+       r = dict((c.description[i][0], value) for i, value in enumerate(result))
+       temp = json.loads(r["profile"])
+       temp.update(filter(profile))  #incomplete profiles such as {"dist": [12.5]} are allowed and will be merged with other existing fields; filter removes unwanted fields
 
-       c.execute("UPDATE parts SET profile = ?, timestamp = ? WHERE id = ?", [profile, timestamp, id])
+       c.execute("UPDATE parts SET profile = ?, timestamp = ? WHERE id = ?", [json.dumps(temp), timestamp, id])
        conn.commit()
+
+       r.update({"profile":temp, "timestamp": timestamp})
 
        return r
 
@@ -87,8 +96,10 @@ def update_part(conn, id, description, profile):
     result = c.fetchone()
     if result:
        r = [dict((c.description[i][0], value) for i, value in enumerate(result))]
+       temp = json.loads(r["profile"])
+       temp.update(filter(profile))  #incomplete profiles such as {"dist": [12.5]} are allowed and will be merged with other existing fields; filter removes unwanted fields
 
-       c.execute("UPDATE parts SET description = ?, profile = ?, timestamp = ? WHERE id = ?", [description, profile, timestamp, id])
+       c.execute("UPDATE parts SET description = ?, profile = ?, timestamp = ? WHERE id = ?", [description, json.dumps(temp), timestamp, id])
        conn.commit()
 
        return r
@@ -107,7 +118,7 @@ def archive(conn, filename):
         f = open(filename, "w")
 
         if f:
-            f.write(f"IndraMotion Rollfeed Standard (XM RFS) recipe backup: {timestamp}\n")
+            f.write(f"IndraMotion Rollfeed Standard (CTRLX RFS) recipe backup: {timestamp}\n")
             for part in parts:
                 profile = json.loads(part['profile'])
 
@@ -119,10 +130,10 @@ def archive(conn, filename):
                 f.write(f"\tLast edited: {part['timestamp']}\n")
 
             f.close()
-            return parts
+            return True
         else:
             print("rfs-parts-db unable to open file")
-            return []
+            return False
 
 def restore(conn, filename):
     c = conn.cursor()
@@ -162,8 +173,38 @@ def restore(conn, filename):
 
                 c.execute("INSERT INTO parts(description, profile, timestamp) VALUES(?, ?, ?);", (description, profile, timestamp))
                 conn.commit() 
-                 
-                              
 
         f.close()
-        return   
+        return True
+
+
+    else:
+        print("rfs-parts-db unable to open file")
+        return False                           
+
+# filter out unwanted fields
+def filter(profile): 
+    proto = {"dist": [], "vel": [], "accel": []} 
+    
+    try:
+        temp = json.loads(profile)
+        common_keys = temp.keys() & proto.keys()
+
+        return {k: temp[k] for k in common_keys}    
+
+    except ValueError:
+        return  proto  
+
+# filter out unwanted fields and add default values for any missing fields
+def normalize(profile):   
+    default = {"dist": [12], "vel": [75], "accel": [75]} 
+    
+    try:
+        temp = json.loads(profile)
+        common_keys = temp.keys() & default.keys()
+        a ={k: temp[k] for k in common_keys} 
+
+        return {**default, **a}     
+
+    except ValueError:
+        return  default  

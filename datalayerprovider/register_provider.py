@@ -42,7 +42,7 @@ def run_provider(provider : datalayer.provider.Provider):
     base = datalayerprovider.utils.initialize(db) #Leave one connection instance open to maintain memory
     base.execute("pragma journal_mode=wal;")       #Configure database in "write-ahead log" mode
 
-    profile_2 = {"dist": [192.34], "vel": [75], "accel": [75]}
+    profile_2 = {"dist": [12], "vel": [75], "accel": [75]}   #prepopulate database --- for testing only
     datalayerprovider.utils.add_part(base, json.dumps(profile_2))    
 
     #node_push = datalayerprovider.nodes.Push(db)  #add job to queue
@@ -53,20 +53,28 @@ def run_provider(provider : datalayer.provider.Provider):
     #node_auto = datalayerprovider.nodes.Auto(auto)    #automatically generate job orders when true
 
     node_push = datalayerprovider.nodes.Push(db)          #add part to db
+    node_update = datalayerprovider.nodes.Update(db)      #update part 
     node_archive = datalayerprovider.nodes.Archive(db)    #create Archive file
     node_restore = datalayerprovider.nodes.Restore(db)    #create Archive file
 
 
-    with datalayer.provider_node.ProviderNode(node_push.cbs, 1234) as node_1, datalayer.provider_node.ProviderNode(node_archive.cbs, 1234) as node_2, datalayer.provider_node.ProviderNode(node_restore.cbs, 1234) as node_3:   
+    with datalayer.provider_node.ProviderNode(node_push.cbs, 1234) as node_1,       \
+            datalayer.provider_node.ProviderNode(node_update.cbs, 1234) as node_2,  \
+            datalayer.provider_node.ProviderNode(node_archive.cbs, 1234) as node_3, \
+            datalayer.provider_node.ProviderNode(node_restore.cbs, 1234) as node_4:   
         result = provider.register_node("rfs/add_part", node_1)
         if result != datalayer.variant.Result.OK:
-            print("Register pop failed with: ", result)
+            print("Register add_part failed with: ", result)
 
-        result = provider.register_node("rfs/archive", node_2)
+        result = provider.register_node("rfs/update_part", node_2)
+        if result != datalayer.variant.Result.OK:
+            print("Register update_part failed with: ", result)
+
+        result = provider.register_node("rfs/archive", node_3)
         if result != datalayer.variant.Result.OK:
             print("Register job_request failed with: ", result)
 
-        result = provider.register_node("rfs/restore", node_3)
+        result = provider.register_node("rfs/restore", node_4)
         if result != datalayer.variant.Result.OK:
             print("Register pop failed with: ", result)
 

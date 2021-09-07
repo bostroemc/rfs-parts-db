@@ -33,18 +33,18 @@ from jsonschema import validate
 
 import datalayerprovider.utils
 
+# add part to database; required format:  {"description": "", "profile":{"dist": [], "vel": [], "accel":[]}}
 class Push:
-    dataString: str = "Hello from Python Provider"
+    _value: str = ""
     id : int = 0
 
     schema = {
         "type" : "object",
         "properties" : {
-            "name" : {"type" : "array"},
-            "email" : {"type" : "string"},
-            "color" : {"type" : "array"},
+            "description" : {"type" : "string"},
+            "profile" : {"type" : "string"},
         },
-        "required" : ["name", "email", "color"]
+        "required" : ["profile"]
     }
     
     def __init__(self, db):
@@ -59,7 +59,7 @@ class Push:
         self.db = db
 
     def __on_create(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
-        self.dataString
+        self._value
         cb(Result(Result.OK), None)
 
     def __on_remove(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
@@ -67,9 +67,9 @@ class Push:
         cb(Result(Result.UNSUPPORTED), None)
 
     def __on_browse(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
-        new_data = Variant()
-        new_data.set_array_string([])
-        cb(Result(Result.OK), new_data)
+        _data = Variant()
+        _data.set_array_string([])
+        cb(Result(Result.OK), _data)
 
     def __on_read(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _data = Variant()
@@ -96,7 +96,84 @@ class Push:
         print("__on_metadata")
         cb(Result(Result.OK), None)
 
+# update part in database; required format:  {"id": 1, "description": "", "profile":{"dist": [], "vel": [], "accel":[]}}
+class Update:
+    _value: str = ""
+    id : int = 0
 
+    schema = {
+        "type" : "object",
+        "properties" : {
+            "description" : {"type" : "string"},
+            "profile" : {"type" : "string"},
+        },
+        "required" : ["profile"]
+    }
+    
+    def __init__(self, db):
+        self.cbs = ProviderNodeCallbacks(
+        self.__on_create,
+        self.__on_remove,
+        self.__on_browse,
+        self.__on_read,
+        self.__on_write,
+        self.__on_metadata
+        )
+        self.db = db
+
+    def __on_create(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+        self._value
+        cb(Result(Result.OK), None)
+
+    def __on_remove(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+        # Not implemented because no wildcard is registered
+        cb(Result(Result.UNSUPPORTED), None)
+
+    def __on_browse(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+        _data = Variant()
+        _data.set_array_string([])
+        cb(Result(Result.OK), _data)
+
+    def __on_read(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+        _data = Variant()
+
+        conn = datalayerprovider.utils.initialize(self.db)
+        if conn:
+            _data.set_string(json.dumps(datalayerprovider.utils.fetch(conn, 20, 0))) 
+            conn.close()
+
+        cb(Result(Result.OK), _data)
+    
+    def __on_write(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+        _id = 1
+        _description = ""
+        _profile = {}
+
+        _test = json.loads(data.get_string())
+        if "id" in _test:
+            _id = _test["id"]
+
+        if "description" in _test:
+            _description = _test["description"]
+
+        if "profile" in _test:    
+            _profile = _test["profile"]
+  
+        
+        # _isValid = validate(_test, self.schema)
+ 
+        conn = datalayerprovider.utils.initialize(self.db)
+        if conn: # and _isValid:
+            datalayerprovider.utils.update_part(conn, _id, _description, json.dumps(_test))
+            conn.close()
+
+        cb(Result(Result.OK), None)        
+
+    def __on_metadata(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+        print("__on_metadata")
+        cb(Result(Result.OK), None)        
+
+# retrieve database and write to file (verbose text format)
 class Archive:
     _value: str = ""
 
@@ -148,7 +225,7 @@ class Archive:
     def __on_metadata(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         cb(Result(Result.OK), None)       
 
-
+# read file in verbose text format and overwrite database
 class Restore:
     _value: str = ""
 
