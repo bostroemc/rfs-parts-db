@@ -35,11 +35,11 @@ import datalayerprovider.utils
 def run_provider(provider : datalayer.provider.Provider):
     offset = [0, 0]  # fetch offsets [queue, history]
     
-    db = "file:memdb1?mode=memory&cache=shared" #in-memory database      
-    # db = os.environ.get("SNAP_COMMON") + "/temp.db"
+    # db = "file:memdb1?mode=memory&cache=shared" #in-memory database      
+    db = os.environ.get("SNAP_COMMON") + "/rfs_parts.db"
     
-    base = datalayerprovider.utils.initialize(db) # leave one connection instance open to maintain memory
-    base.execute("pragma journal_mode=wal;")       # configure database in "write-ahead log" mode
+    #base = datalayerprovider.utils.initialize(db) # leave one connection instance open to maintain memory
+    #base.execute("pragma journal_mode=wal;")       # configure database in "write-ahead log" mode
 
     #profile_2 = {"dist": [12], "vel": [75], "accel": [75]}   #prepopulate database --- for testing only
     #datalayerprovider.utils.add_part(base, "", json.dumps(profile_2))    
@@ -83,7 +83,7 @@ def run_provider(provider : datalayer.provider.Provider):
 
             time.sleep(5)
         
-        base.close()     #close base database connection
+        #base.close()     #close base database connection
 
         result = provider.stop()
  
