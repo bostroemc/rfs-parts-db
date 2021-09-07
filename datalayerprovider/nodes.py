@@ -82,12 +82,22 @@ class Push:
         cb(Result(Result.OK), _data)
     
     def __on_write(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+        _description = ""
+        _profile = {}
+
         _test = json.loads(data.get_string())
+
+        if "description" in _test:
+            _description = _test["description"]
+
+        if "profile" in _test:    
+            _profile = _test["profile"]
+
         # _isValid = validate(_test, self.schema)
  
         conn = datalayerprovider.utils.initialize(self.db)
         if conn: # and _isValid:
-            datalayerprovider.utils.add_part(conn, json.dumps(_test))
+            datalayerprovider.utils.add_part(conn, _description, json.dumps(_test))
             conn.close()
 
         cb(Result(Result.OK), None)        
