@@ -96,6 +96,7 @@ def run_provider(provider : datalayer.provider.Provider):
         result = provider.stop()
  
         result = provider.unregister_node("rfs/add_part")
+        result = provider.unregister_node("rfs/update_part")
         result = provider.unregister_node("rfs/archive")
         result = provider.unregister_node("rfs/restore")
 
