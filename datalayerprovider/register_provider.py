@@ -33,29 +33,21 @@ import datalayerprovider.nodes
 import datalayerprovider.utils
 
 def run_provider(provider : datalayer.provider.Provider):
-    offset = [0, 0]  #Fetch offsets [queue, history]
-    auto = True 
+    offset = [0, 0]  # fetch offsets [queue, history]
     
     db = "file:memdb1?mode=memory&cache=shared" #in-memory database      
     # db = os.environ.get("SNAP_COMMON") + "/temp.db"
     
-    base = datalayerprovider.utils.initialize(db) #Leave one connection instance open to maintain memory
-    base.execute("pragma journal_mode=wal;")       #Configure database in "write-ahead log" mode
+    base = datalayerprovider.utils.initialize(db) # leave one connection instance open to maintain memory
+    base.execute("pragma journal_mode=wal;")       # configure database in "write-ahead log" mode
 
-    profile_2 = {"dist": [12], "vel": [75], "accel": [75]}   #prepopulate database --- for testing only
-    datalayerprovider.utils.add_part(base, "", json.dumps(profile_2))    
+    #profile_2 = {"dist": [12], "vel": [75], "accel": [75]}   #prepopulate database --- for testing only
+    #datalayerprovider.utils.add_part(base, "", json.dumps(profile_2))    
 
-    #node_push = datalayerprovider.nodes.Push(db)  #add job to queue
-    #node_pop = datalayerprovider.nodes.Pop(db)    #pop job from queue
-    #node_count = datalayerprovider.nodes.Count(db)     #return queue/pending count, write zero to dump
-    #node_done =  datalayerprovider.nodes.Done(db)     #add item to db or mark item in db as done
-    #node_history = datalayerprovider.nodes.History(db)    #fetch items from history
-    #node_auto = datalayerprovider.nodes.Auto(auto)    #automatically generate job orders when true
-
-    node_push = datalayerprovider.nodes.Push(db)          #add part to db
-    node_update = datalayerprovider.nodes.Update(db)      #update part 
-    node_archive = datalayerprovider.nodes.Archive(db)    #create Archive file
-    node_restore = datalayerprovider.nodes.Restore(db)    #create Archive file
+    node_push = datalayerprovider.nodes.Push(db)          # add part to db
+    node_update = datalayerprovider.nodes.Update(db)      # update part 
+    node_archive = datalayerprovider.nodes.Archive(db)    # create Archive file
+    node_restore = datalayerprovider.nodes.Restore(db)    # create Archive file
 
 
     with datalayer.provider_node.ProviderNode(node_push.cbs, 1234) as node_1,       \

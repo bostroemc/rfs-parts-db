@@ -83,7 +83,7 @@ class Push:
     
     def __on_write(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _description = ""
-        _profile = {}
+        _profile = "{}"
 
         _test = json.loads(data.get_string())
 
@@ -97,7 +97,7 @@ class Push:
  
         conn = datalayerprovider.utils.initialize(self.db)
         if conn: # and _isValid:
-            datalayerprovider.utils.add_part(conn, _description, json.dumps(_profile))
+            datalayerprovider.utils.add_part(conn, _description, _profile)
             conn.close()
 
         cb(Result(Result.OK), None)        
@@ -157,7 +157,7 @@ class Update:
     def __on_write(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _id = 1
         _description = ""
-        _profile = {}
+        _profile = "{}"
 
         _test = json.loads(data.get_string())
         if "id" in _test:
@@ -168,13 +168,12 @@ class Update:
 
         if "profile" in _test:    
             _profile = _test["profile"]
-  
-        
+
         # _isValid = validate(_test, self.schema)
  
         conn = datalayerprovider.utils.initialize(self.db)
         if conn: # and _isValid:
-            datalayerprovider.utils.update_part(conn, _id, _description, json.dumps(_profile))
+            datalayerprovider.utils.update_part(conn, _id, _description, _profile)
             conn.close()
 
         cb(Result(Result.OK), None)        
