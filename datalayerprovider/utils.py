@@ -95,7 +95,7 @@ def update_part(conn, id, description, profile):
     c.execute("SELECT * FROM parts WHERE id = ?", [id])
     result = c.fetchone()
     if result:
-       r = [dict((c.description[i][0], value) for i, value in enumerate(result))]
+       r = dict((c.description[i][0], value) for i, value in enumerate(result))
        temp = json.loads(r["profile"])
        temp.update(filter(profile))  #incomplete profiles such as {"dist": [12.5]} are allowed and will be merged with other existing fields; filter removes unwanted fields
 

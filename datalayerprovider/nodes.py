@@ -97,7 +97,7 @@ class Push:
  
         conn = datalayerprovider.utils.initialize(self.db)
         if conn: # and _isValid:
-            datalayerprovider.utils.add_part(conn, _description, json.dumps(_test))
+            datalayerprovider.utils.add_part(conn, _description, json.dumps(_profile))
             conn.close()
 
         cb(Result(Result.OK), None)        
