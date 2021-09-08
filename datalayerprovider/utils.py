@@ -101,14 +101,23 @@ def update_part(conn, id, description, profile):
     c.execute("SELECT * FROM parts WHERE id = ?", [id])
     result = c.fetchone()
     if result:
-       r = dict((c.description[i][0], value) for i, value in enumerate(result))
-       temp = json.loads(r["profile"])
-       temp.update(filter(profile))  #incomplete profiles such as {"dist": [12.5]} are allowed and will be merged with other existing fields; filter removes unwanted fields
+        r = dict((c.description[i][0], value) for i, value in enumerate(result))
+        if profile:
+            r = dict((c.description[i][0], value) for i, value in enumerate(result))
+            temp = json.loads(r["profile"])
+            temp.update(filter(profile))  #incomplete profiles such as {"dist": [12.5]} are allowed and will be merged with other existing fields; filter removes unwanted fields
+       
+            if description:
+                c.execute("UPDATE parts SET description = ?, profile = ?, timestamp = ? WHERE id = ?", [description, json.dumps(temp), timestamp, id])
+                conn.commit()
+            else:
+                c.execute("UPDATE parts SET profile = ?, timestamp = ? WHERE id = ?", [json.dumps(temp), timestamp, id])
+                conn.commit()
+        elif description:
+            c.execute("UPDATE parts SET description = ?, timestamp = ? WHERE id = ?", [description, timestamp, id])
+            conn.commit()    
 
-       c.execute("UPDATE parts SET description = ?, profile = ?, timestamp = ? WHERE id = ?", [description, json.dumps(temp), timestamp, id])
-       conn.commit()
-
-       return r
+        return True
 
 def archive(conn, filename):
     c = conn.cursor()
@@ -197,7 +206,6 @@ def filter(profile):
     default = {"dist": [], "vel": [], "accel": [], "qty": []} 
     
     try:
-        #temp = json.loads(profile)
         common_keys = profile.keys() & default.keys()
 
         return {k: profile[k] for k in common_keys}    
@@ -210,7 +218,6 @@ def normalize(profile):
     default = {"dist": [12], "vel": [75], "accel": [75], "qty": [0]} 
     
     try:
-        #temp = json.loads(profile)
         common_keys = profile.keys() & default.keys()
         a ={k: profile[k] for k in common_keys} 
 

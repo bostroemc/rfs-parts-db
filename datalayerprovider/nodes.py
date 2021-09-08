@@ -155,7 +155,7 @@ class Update:
         cb(Result(Result.OK), _data)
     
     def __on_write(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
-        _id = 1
+        _id = 0
         _description = ""
         _profile = {}
 
@@ -169,10 +169,8 @@ class Update:
         if "profile" in _test:    
             _profile = _test["profile"]
 
-        # _isValid = validate(_test, self.schema)
- 
         conn = datalayerprovider.utils.initialize(self.db)
-        if conn: # and _isValid:
+        if conn and _id: 
             datalayerprovider.utils.update_part(conn, _id, _description, _profile)
             conn.close()
 
