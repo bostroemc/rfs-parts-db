@@ -179,7 +179,7 @@ def restore(conn, filename):
                 accel = [float(x) for x in temp[1].strip("[]").split(', ')]
 
             if temp[0] == 'Quantity':
-                qty = [float(x) for x in temp[1].strip("[]").split(', ')]
+                qty = [int(x) for x in temp[1].strip("[]").split(', ')]
 
             if temp[0] == 'Last edited':
                 timestamp = temp[1]        

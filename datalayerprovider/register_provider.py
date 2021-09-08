@@ -35,15 +35,8 @@ import datalayerprovider.utils
 def run_provider(provider : datalayer.provider.Provider):
     offset = [0, 0]  # fetch offsets [queue, history]
     
-    # db = "file:memdb1?mode=memory&cache=shared" #in-memory database      
     db = os.environ.get("SNAP_COMMON") + "/rfs_parts.db"
     
-    #base = datalayerprovider.utils.initialize(db) # leave one connection instance open to maintain memory
-    #base.execute("pragma journal_mode=wal;")       # configure database in "write-ahead log" mode
-
-    #profile_2 = {"dist": [12], "vel": [75], "accel": [75]}   #prepopulate database --- for testing only
-    #datalayerprovider.utils.add_part(base, "", json.dumps(profile_2))    
-
     node_push = datalayerprovider.nodes.Push(db)          # add part to db
     node_update = datalayerprovider.nodes.Update(db)      # update part 
     node_archive = datalayerprovider.nodes.Archive(db)    # create Archive file
@@ -75,16 +68,9 @@ def run_provider(provider : datalayer.provider.Provider):
         if result != datalayer.variant.Result.OK:
             print("Starting rfs-parts-db failed with: ", result)
             
-        count=0
-        while True:
-            count=count+1
-            if count > 360:
-                break
-
+        while provider.is_connected():
             time.sleep(5)
         
-        #base.close()     #close base database connection
-
         result = provider.stop()
  
         result = provider.unregister_node("rfs/add_part")
