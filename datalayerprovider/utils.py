@@ -6,7 +6,7 @@ import sqlite3
 from sqlite3 import Error
 import json
 
-# part format:  {"description":"", "profile":{"dist":[75], "vel":[75], "accel":[75]}}
+# part format:  {"description":"", "profile":{"dist":[75], "vel":[75], "accel":[75], "qty":[0]}}
 
 
 # initialize database connection, adding tables queue and history if required
@@ -54,7 +54,13 @@ def fetch(conn, limit, offset):
     result = c.fetchall()
 
     if result:
-        r = [dict((c.description[i][0], value) for i, value in enumerate(row)) for row in result]
+        #r = [dict((c.description[i][0], value) for i, value in enumerate(row)) for row in result]
+        r = []
+        for row in result:
+            _temp = dict((c.description[i][0], value) for i, value in enumerate(row))
+            _temp["profile"] = json.loads(_temp["profile"])
+
+            r.append(_temp)
         return r
 
 #dump parts table
@@ -127,6 +133,7 @@ def archive(conn, filename):
                 f.write(f"\tDistance: {profile['dist']}\n")
                 f.write(f"\tVelocity: {profile['vel']}\n")
                 f.write(f"\tAcceleration: {profile['accel']}\n")
+                f.write(f"\tQuantity: {profile['qty']}\n")
                 f.write(f"\tLast edited: {part['timestamp']}\n")
 
             f.close()
@@ -162,6 +169,9 @@ def restore(conn, filename):
             if temp[0] == 'Acceleration':
                 accel = [float(x) for x in temp[1].strip("[]").split(', ')]
 
+            if temp[0] == 'Quantity':
+                qty = [float(x) for x in temp[1].strip("[]").split(', ')]
+
             if temp[0] == 'Last edited':
                 timestamp = temp[1]        
 
@@ -169,7 +179,7 @@ def restore(conn, filename):
                 # add error checking here
                 #
                 
-                profile = json.dumps({"dist": dist, "vel": vel, "accel": accel})
+                profile = json.dumps({"dist": dist, "vel": vel, "accel": accel, "qty": qty})
 
                 c.execute("INSERT INTO parts(description, profile, timestamp) VALUES(?, ?, ?);", (description, profile, timestamp))
                 conn.commit() 
@@ -182,27 +192,27 @@ def restore(conn, filename):
         print("rfs-parts-db unable to open file")
         return False                           
 
-# filter out unwanted fields
+# filter out unwanted fields; profile passed as dictionary
 def filter(profile): 
-    proto = {"dist": [], "vel": [], "accel": []} 
+    default = {"dist": [], "vel": [], "accel": [], "qty": []} 
     
     try:
-        temp = json.loads(profile)
-        common_keys = temp.keys() & proto.keys()
+        #temp = json.loads(profile)
+        common_keys = profile.keys() & default.keys()
 
-        return {k: temp[k] for k in common_keys}    
+        return {k: profile[k] for k in common_keys}    
 
     except ValueError:
         return  proto  
 
-# filter out unwanted fields and add default values for any missing fields
+# filter out unwanted fields and add default values for any missing fields; profile passed as dictionary
 def normalize(profile):   
-    default = {"dist": [12], "vel": [75], "accel": [75]} 
+    default = {"dist": [12], "vel": [75], "accel": [75], "qty": [0]} 
     
     try:
-        temp = json.loads(profile)
-        common_keys = temp.keys() & default.keys()
-        a ={k: temp[k] for k in common_keys} 
+        #temp = json.loads(profile)
+        common_keys = profile.keys() & default.keys()
+        a ={k: profile[k] for k in common_keys} 
 
         return {**default, **a}     
 
