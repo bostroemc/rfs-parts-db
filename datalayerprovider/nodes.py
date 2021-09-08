@@ -83,7 +83,7 @@ class Push:
     
     def __on_write(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _description = ""
-        _profile = "{}"
+        _profile = {}
 
         _test = json.loads(data.get_string())
 
@@ -157,7 +157,7 @@ class Update:
     def __on_write(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _id = 1
         _description = ""
-        _profile = "{}"
+        _profile = {}
 
         _test = json.loads(data.get_string())
         if "id" in _test:
