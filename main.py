@@ -23,8 +23,8 @@
 import os
 import sys
 
-import datalayerprovider.register_provider
+import app.register_provider
 
 if __name__ == '__main__':
-    datalayerprovider.register_provider.run()
+    app.register_provider.run()
     

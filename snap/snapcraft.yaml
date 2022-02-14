@@ -8,12 +8,12 @@ base: core20
 confinement: strict
 grade: stable
 
-architectures:
-  - build-on: arm64
+#architectures:
+#  - build-on: arm64
 
 apps:
   provider:
-    command: ./wrapper/register_job_queue
+    command: bin/main.py
     plugs:
       - network
       - datalayer
@@ -27,11 +27,6 @@ parts:
   provider:
     plugin: python
     source: .
-    python-packages:
-      - jsonschema
-      - ctrlx-datalayer
-      - ctrlx-fbs
-      - flatbuffers~=1.12
 
 
 # describes which interface slots are supported by defining the plugs
