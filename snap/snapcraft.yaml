@@ -29,9 +29,9 @@ apps:
     daemon: simple
 
 parts:
-  interpreter:
-    plugin: python
-    source: .
+  #interpreter:
+    #plugin: python
+    #source: .
     # python-packages:
     #  - jsonschema
 
