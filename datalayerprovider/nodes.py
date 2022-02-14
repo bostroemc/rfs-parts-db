@@ -29,7 +29,7 @@ import json
 import os
 # import sqlite3
 from sqlite3 import Error
-from jsonschema import validate
+#from jsonschema import validate
 
 import datalayerprovider.utils
 
