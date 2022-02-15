@@ -31,6 +31,8 @@ from sqlite3 import Error
 import json
 
 import datalayer
+from datalayer.variant import Variant
+
 import app.nodes
 import app.utils
 
@@ -41,6 +43,7 @@ def main():
         datalayer_system.start(False)
 
         connectionProvider = "tcp://boschrexroth:boschrexroth@127.0.0.1:2070"
+
         if 'SNAP' in os.environ:
             connectionProvider = "ipc://"
 

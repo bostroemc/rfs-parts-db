@@ -20,9 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datalayer.clib
+import datalayer
 from datalayer.provider_node import ProviderNodeCallbacks, NodeCallback
 from datalayer.variant import Result, Variant
+
+import flatbuffers
+from comm.datalayer import Metadata, NodeClass, AllowedOperations, Reference
 
 import json
 # import time
@@ -32,6 +35,7 @@ from sqlite3 import Error
 #from jsonschema import validate
 
 import app.utils
+import app.metadata
 
 # add part to database; required format:  {"description": "", "profile":{"dist": [], "vel": [], "accel":[]}}
 class Push:
@@ -57,6 +61,10 @@ class Push:
         self.__on_metadata
         )
         self.db = db
+        self.name = "add_part"
+        self.metadata = Variant()
+        app.metadata.create(self,'string_value', self.name, 'Write {} to add default part')
+
 
     def __on_create(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         self._value
@@ -104,7 +112,7 @@ class Push:
 
     def __on_metadata(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         print("__on_metadata")
-        cb(Result(Result.OK), None)
+        cb(Result(Result.OK), self.metadata)
 
 # update part in database; required format:  {"id": 1, "description": "", "profile":{"dist": [], "vel": [], "accel":[]}}
 class Update:
@@ -130,6 +138,9 @@ class Update:
         self.__on_metadata
         )
         self.db = db
+        self.name = "update_part"
+        self.metadata = Variant()
+        app.metadata.create(self,'string_value', self.name, 'Identify part by ID')
 
     def __on_create(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         self._value
@@ -178,7 +189,7 @@ class Update:
 
     def __on_metadata(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         print("__on_metadata")
-        cb(Result(Result.OK), None)        
+        cb(Result(Result.OK), self.metadata)        
 
 # retrieve database and write to file (verbose text format)
 class Archive:
@@ -194,6 +205,9 @@ class Archive:
         self.__on_metadata
         )
         self.db = db
+        self.name = "archive"
+        self.metadata = Variant()
+        app.metadata.create(self,'string_value', self.name, 'Write 1 to save archive to USB')
 
     def __on_create(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         self.data
@@ -230,7 +244,7 @@ class Archive:
         cb(Result(Result.OK), _data)        
 
     def __on_metadata(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
-        cb(Result(Result.OK), None)       
+        cb(Result(Result.OK), self.metadata)       
 
 # read file in verbose text format and overwrite database
 class Restore:
@@ -246,6 +260,9 @@ class Restore:
         self.__on_metadata
         )
         self.db = db
+        self.name = "restore"
+        self.metadata = Variant()
+        app.metadata.create(self,'string_value', self.name, 'Write 1 to load archive from USB')
 
     def __on_create(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         self.data
@@ -280,4 +297,4 @@ class Restore:
         cb(Result(Result.OK), _data)        
 
     def __on_metadata(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
-        cb(Result(Result.OK), None)                       
+        cb(Result(Result.OK), self.metadata)                       
