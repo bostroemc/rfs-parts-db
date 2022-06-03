@@ -1,5 +1,5 @@
 name: rfs-parts-db
-version: 1.3.9
+version: 2.0.0
 summary: Python-based parts database handler for Rexroth ctrlX AUTOMATION RFS platform 
 title: rfs-parts-db
 description: |
@@ -10,6 +10,7 @@ grade: stable
 
 architectures:
   - build-on: arm64
+  - build-on: amd64
 
 apps:
   provider:
@@ -27,6 +28,13 @@ parts:
   provider:
     plugin: python
     source: .
+
+  datalayerdeb:
+      plugin: dump
+      source: ./deb/ctrlx-datalayer-1.7.13.deb
+      source-type: deb
+      stage-packages:
+        - libzmq5    
 
 plugs:
   datalayer:

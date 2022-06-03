@@ -23,6 +23,8 @@
 import os 
 import sys
 import signal
+# obsolete:  TODO: delete
+
 import time
 import sqlite3
 from sqlite3 import Error

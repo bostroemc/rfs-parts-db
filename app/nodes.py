@@ -20,12 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datalayer
-from datalayer.provider_node import ProviderNodeCallbacks, NodeCallback
-from datalayer.variant import Result, Variant
+import ctrlxdatalayer
+from ctrlxdatalayer.provider_node import ProviderNodeCallbacks, NodeCallback
+from ctrlxdatalayer.variant import Result, Variant
+
+from comm.datalayer import NodeClass
 
 import flatbuffers
-from comm.datalayer import Metadata, NodeClass, AllowedOperations, Reference
 
 import json
 # import time
@@ -35,7 +36,6 @@ from sqlite3 import Error
 #from jsonschema import validate
 
 import app.utils
-import app.metadata
 
 # add part to database; required format:  {"description": "", "profile":{"dist": [], "vel": [], "accel":[]}}
 class Push:
@@ -51,7 +51,7 @@ class Push:
         "required" : ["profile"]
     }
     
-    def __init__(self, db):
+    def __init__(self, provider: ctrlxdatalayer.provider, db):
         self.cbs = ProviderNodeCallbacks(
         self.__on_create,
         self.__on_remove,
@@ -60,26 +60,33 @@ class Push:
         self.__on_write,
         self.__on_metadata
         )
+        self.providerNode = ctrlxdatalayer.provider_node.ProviderNode(self.cbs)
+
         self.db = db
+        self.provider = provider
+
         self.name = "add_part"
-        self.metadata = Variant()
-        app.metadata.create(self,'string_value', self.name, 'Write {} to add default part')
+        self.address = "rfs/add_part"
+        self.description = 'Write {} to add default part'
+
+        self.metadata = self.create_metadata("types/datalayer/string", self.name, '', self.description)
 
 
-    def __on_create(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+
+    def __on_create(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         self._value
-        cb(Result(Result.OK), None)
+        cb(Result.OK, None)
 
-    def __on_remove(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+    def __on_remove(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         # Not implemented because no wildcard is registered
-        cb(Result(Result.UNSUPPORTED), None)
+        cb(Result.UNSUPPORTED, None)
 
-    def __on_browse(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+    def __on_browse(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         _data = Variant()
         _data.set_array_string([])
-        cb(Result(Result.OK), _data)
+        cb(Result.OK, _data)
 
-    def __on_read(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+    def __on_read(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _data = Variant()
 
         conn = app.utils.initialize(self.db)
@@ -87,9 +94,9 @@ class Push:
             _data.set_string(json.dumps(app.utils.fetch(conn, 20, 0))) 
             conn.close()
 
-        cb(Result(Result.OK), _data)
+        cb(Result.OK, _data)
     
-    def __on_write(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+    def __on_write(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _description = ""
         _profile = {}
 
@@ -108,11 +115,11 @@ class Push:
             app.utils.add_part(conn, _description, _profile)
             conn.close()
 
-        cb(Result(Result.OK), None)        
+        cb(Result.OK, None)        
 
-    def __on_metadata(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+    def __on_metadata(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         print("__on_metadata")
-        cb(Result(Result.OK), self.metadata)
+        cb(Result.OK, self.metadata)
 
 # update part in database; required format:  {"id": 1, "description": "", "profile":{"dist": [], "vel": [], "accel":[]}}
 class Update:
@@ -128,7 +135,7 @@ class Update:
         "required" : ["profile"]
     }
     
-    def __init__(self, db):
+    def __init__(self, provider: ctrlxdatalayer.provider, db):
         self.cbs = ProviderNodeCallbacks(
         self.__on_create,
         self.__on_remove,
@@ -137,25 +144,32 @@ class Update:
         self.__on_write,
         self.__on_metadata
         )
+        self.providerNode = ctrlxdatalayer.provider_node.ProviderNode(self.cbs)
+
         self.db = db
+        self.provider = provider
+
         self.name = "update_part"
-        self.metadata = Variant()
-        app.metadata.create(self,'string_value', self.name, 'Identify part by ID')
+        self.address = "rfs/update_part"
+        self.description = 'Identify part by ID'
 
-    def __on_create(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+        self.metadata = self.create_metadata("types/datalayer/string", self.name, '', self.description)
+
+
+    def __on_create(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         self._value
-        cb(Result(Result.OK), None)
+        cb(Result.OK, None)
 
-    def __on_remove(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+    def __on_remove(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         # Not implemented because no wildcard is registered
-        cb(Result(Result.UNSUPPORTED), None)
+        cb(Result.UNSUPPORTED, None)
 
-    def __on_browse(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+    def __on_browse(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         _data = Variant()
         _data.set_array_string([])
-        cb(Result(Result.OK), _data)
+        cb(Result.OK, _data)
 
-    def __on_read(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+    def __on_read(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _data = Variant()
 
         conn = app.utils.initialize(self.db)
@@ -163,9 +177,9 @@ class Update:
             _data.set_string(json.dumps(app.utils.fetch(conn, 20, 0))) 
             conn.close()
 
-        cb(Result(Result.OK), _data)
+        cb(Result.OK, _data)
     
-    def __on_write(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+    def __on_write(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _id = 0
         _description = ""
         _profile = {}
@@ -185,17 +199,17 @@ class Update:
             app.utils.update_part(conn, _id, _description, _profile)
             conn.close()
 
-        cb(Result(Result.OK), None)        
+        cb(Result.OK, None)        
 
-    def __on_metadata(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+    def __on_metadata(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         print("__on_metadata")
-        cb(Result(Result.OK), self.metadata)        
+        cb(Result.OK, self.metadata)        
 
 # retrieve database and write to file (verbose text format)
 class Archive:
     _value: str = ""
 
-    def __init__(self, db):
+    def __init__(self, provider: ctrlxdatalayer.provider, db):
         self.cbs = ProviderNodeCallbacks(
         self.__on_create,
         self.__on_remove,
@@ -204,31 +218,38 @@ class Archive:
         self.__on_write,
         self.__on_metadata
         )
+        self.providerNode = ctrlxdatalayer.provider_node.ProviderNode(self.cbs)
+
         self.db = db
+        self.provider = provider
+
         self.name = "archive"
-        self.metadata = Variant()
-        app.metadata.create(self,'string_value', self.name, 'Write 1 to save archive to USB')
+        self.address = "rfs/archive"
+        self.description = 'Write 1 to save archive to USB'
 
-    def __on_create(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+        self.metadata = self.create_metadata("types/datalayer/string", self.name, '', self.description)
+
+
+    def __on_create(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         self.data
-        cb(Result(Result.OK), None)
+        cb(Result.OK, None)
 
-    def __on_remove(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+    def __on_remove(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         # Not implemented because no wildcard is registered
-        cb(Result(Result.UNSUPPORTED), None)
+        cb(Result.UNSUPPORTED, None)
 
-    def __on_browse(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+    def __on_browse(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         _data = Variant()
         _data.set_array_string([])
-        cb(Result(Result.OK), _data)
+        cb(Result.OK, _data)
 
-    def __on_read(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+    def __on_read(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _data = Variant()  
         _data.set_string(self._value)
            
-        cb(Result(Result.OK), _data)
+        cb(Result.OK, _data)
     
-    def __on_write(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+    def __on_write(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _data = Variant()
         
         print("rfs-parts-db attempting to write file")
@@ -241,16 +262,16 @@ class Archive:
         if conn: 
             conn.close()
 
-        cb(Result(Result.OK), _data)        
+        cb(Result.OK, _data)        
 
-    def __on_metadata(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
-        cb(Result(Result.OK), self.metadata)       
+    def __on_metadata(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+        cb(Result.OK, self.metadata)       
 
 # read file in verbose text format and overwrite database
 class Restore:
     _value: str = ""
 
-    def __init__(self, db):
+    def __init__(self, provider: ctrlxdatalayer.provider, db):
         self.cbs = ProviderNodeCallbacks(
         self.__on_create,
         self.__on_remove,
@@ -259,31 +280,38 @@ class Restore:
         self.__on_write,
         self.__on_metadata
         )
+        self.providerNode = ctrlxdatalayer.provider_node.ProviderNode(self.cbs)
+
         self.db = db
+        self.provider = provider
+
         self.name = "restore"
-        self.metadata = Variant()
-        app.metadata.create(self,'string_value', self.name, 'Write 1 to load archive from USB')
+        self.address = "rfs/restore"
+        self.description = 'Write 1 to load archive from USB'
 
-    def __on_create(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+        self.metadata = self.create_metadata("types/datalayer/string", self.name, '', self.description)
+
+
+    def __on_create(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         self.data
-        cb(Result(Result.OK), None)
+        cb(Result.OK, None)
 
-    def __on_remove(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+    def __on_remove(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         # Not implemented because no wildcard is registered
-        cb(Result(Result.UNSUPPORTED), None)
+        cb(Result.UNSUPPORTED, None)
 
-    def __on_browse(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+    def __on_browse(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         _data = Variant()
         _data.set_array_string([])
-        cb(Result(Result.OK), _data)
+        cb(Result.OK, _data)
 
-    def __on_read(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+    def __on_read(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _data = Variant()  
         _data.set_string(self._value)
            
-        cb(Result(Result.OK), _data)
+        cb(Result.OK, _data)
     
-    def __on_write(self, userdata: datalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+    def __on_write(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _data = Variant()
    
         conn = app.utils.initialize(self.db)
@@ -294,7 +322,7 @@ class Restore:
         if conn: 
             conn.close()
 
-        cb(Result(Result.OK), _data)        
+        cb(Result.OK, _data)        
 
-    def __on_metadata(self, userdata: datalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
-        cb(Result(Result.OK), self.metadata)                       
+    def __on_metadata(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+        cb(Result.OK, self.metadata)                       
