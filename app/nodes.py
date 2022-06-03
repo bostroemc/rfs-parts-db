@@ -71,7 +71,18 @@ class Push:
 
         self.metadata = self.create_metadata("types/datalayer/string", self.name, '', self.description)
 
+    def register_node(self):
+        return self.provider.register_node(self.address, self.providerNode)
 
+    def unregister_node(self):
+        self.provider.unregister_node(self.address)
+
+    def create_metadata(self, typeAddress: str, name: str, unit: str, description: str):
+
+        return ctrlxdatalayer.metadata_utils.MetadataBuilder.create_metadata(
+            name, description, unit, description+"_url", NodeClass.NodeClass.Variable,
+            read_allowed=True, write_allowed=True, create_allowed=False, delete_allowed=False, browse_allowed=True,
+            type_path=typeAddress)   
 
     def __on_create(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         self._value
@@ -155,6 +166,18 @@ class Update:
 
         self.metadata = self.create_metadata("types/datalayer/string", self.name, '', self.description)
 
+    def register_node(self):
+        return self.provider.register_node(self.address, self.providerNode)
+
+    def unregister_node(self):
+        self.provider.unregister_node(self.address)
+
+    def create_metadata(self, typeAddress: str, name: str, unit: str, description: str):
+
+        return ctrlxdatalayer.metadata_utils.MetadataBuilder.create_metadata(
+            name, description, unit, description+"_url", NodeClass.NodeClass.Variable,
+            read_allowed=True, write_allowed=True, create_allowed=False, delete_allowed=False, browse_allowed=True,
+            type_path=typeAddress)   
 
     def __on_create(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         self._value
@@ -229,6 +252,18 @@ class Archive:
 
         self.metadata = self.create_metadata("types/datalayer/string", self.name, '', self.description)
 
+    def register_node(self):
+        return self.provider.register_node(self.address, self.providerNode)
+
+    def unregister_node(self):
+        self.provider.unregister_node(self.address)
+
+    def create_metadata(self, typeAddress: str, name: str, unit: str, description: str):
+
+        return ctrlxdatalayer.metadata_utils.MetadataBuilder.create_metadata(
+            name, description, unit, description+"_url", NodeClass.NodeClass.Variable,
+            read_allowed=True, write_allowed=True, create_allowed=False, delete_allowed=False, browse_allowed=True,
+            type_path=typeAddress)   
 
     def __on_create(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         self.data
@@ -291,7 +326,19 @@ class Restore:
 
         self.metadata = self.create_metadata("types/datalayer/string", self.name, '', self.description)
 
+    def register_node(self):
+        return self.provider.register_node(self.address, self.providerNode)
 
+    def unregister_node(self):
+        self.provider.unregister_node(self.address)
+
+    def create_metadata(self, typeAddress: str, name: str, unit: str, description: str):
+
+        return ctrlxdatalayer.metadata_utils.MetadataBuilder.create_metadata(
+            name, description, unit, description+"_url", NodeClass.NodeClass.Variable,
+            read_allowed=True, write_allowed=True, create_allowed=False, delete_allowed=False, browse_allowed=True,
+            type_path=typeAddress)   
+         
     def __on_create(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         self.data
         cb(Result.OK, None)
