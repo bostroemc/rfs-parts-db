@@ -1,5 +1,5 @@
 name: rfs-parts-db
-version: 2.0.0
+version: 2.0.1
 summary: Python-based parts database handler for Rexroth ctrlX AUTOMATION RFS platform 
 title: rfs-parts-db
 description: |
